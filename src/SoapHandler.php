@@ -28,6 +28,7 @@ class SoapHandler extends \SoapClient {
       // Handle returning 0
       switch( $name ) {
         case 'UpsertMarketoLead':
+        case 'UpsertMarketoLeadAddress':
         case 'SaveWebLeadMetadata':
           if ( $args['QualifiedLead'] == false && $response == 0 )
             return true;
@@ -75,6 +76,22 @@ class SoapHandler extends \SoapClient {
       )
     );
     return $this->__doCall("UpsertMarketoLead", $lead);
+  }
+  public function saveLeadMarketoAddress($lead_object) {
+    $lead = array_merge(
+      $this->getBaseLead($lead_object),
+      array(
+        "QualifiedLead" => $lead_object->QualifiedLead,
+        "Address" => $lead_object->Address,
+        "City" => $lead_object->City,
+        "State" => $lead_object->State,
+        "LeadSource" => $lead_object->LeadSource,
+        "Notes" => $lead_object->Notes,
+        "CampaignId" => $lead_object->CampaignId,
+        "TrackingCookie" => $lead_object->TrackingCookie
+      )
+    );
+    return $this->__doCall("UpsertMarketoLeadAddress", $lead);
   }
   public function saveLeadMetadata($lead_object) {
     $lead = array_merge(
