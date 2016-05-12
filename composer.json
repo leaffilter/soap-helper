@@ -1,0 +1,13 @@
+{
+    "name": "leaffilter/soaphandler",
+    "description": "A wrapper class for interacting with the LeafFilter SOAP Web Service using php-soap",
+    "require": {
+        "php": ">=5.3.0",
+        "ext-soap": "*"
+    },
+    "autoload": {
+        "psr-4": {
+          "LeafFilter\\Integration\\WebService": "src/"
+        }
+    },
+}
