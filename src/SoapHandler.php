@@ -106,6 +106,8 @@ class SoapHandler extends \SoapClient {
         "Notes" => $lead_object->Notes,
         "HomeAdvisorAccount" => $lead_object->HomeAdvisorAccount,
         "HomeAdvisorJobId" => $lead_object->HomeAdvisorJobId,
+        "HomeAdvisorLeadFee" => $lead_object->HomeAdvisorLeadFee,
+        "HomeAdvisorLeadFeeDesc" => $lead_object->HomeAdvisorLeadFeeDesc,
         "CampaignId" => $lead_object->CampaignId,
         "TrackingCookie" => $lead_object->TrackingCookie
       )
