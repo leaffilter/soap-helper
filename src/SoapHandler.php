@@ -159,4 +159,57 @@ class SoapHandler extends \SoapClient {
     );
     return $this->__doCall("SaveWebLeadMetadata", $lead);
   }
+  public function saveLeadReferralMarketoAssociation($lead_object) {
+    $lead = array_merge(
+      $this->getBaseLead($lead_object),
+      array(
+        "LeadSource" => $lead_object->LeadSource,
+        "Notes" => $lead_object->Notes,
+        "ReferrerJobNumber" => $lead_object->ReferrerJobNumber,
+        "CampaignId" => $lead_object->CampaignId,
+        "TrackingCookie" => $lead_object->TrackingCookie,
+        "CampaignTokenList" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->CampaignTokenList),
+            array_values($lead_object->CampaignTokenList)
+          )
+        ]
+      )
+    );
+    return $this->__doCall("SaveWebLeadReferralMarketoAssociation", $lead);
+  }
+  public function saveMarketo($lead_object) {
+    return $this->__doCall("SaveMarketoOnly", array(
+      "ServicePwd" => $this->service_secret,
+      "FirstName" => $lead_object->FirstName,
+      "LastName" => $lead_object->LastName,
+      "Email" => $lead_object->Email,
+      "Phone" => $lead_object->Phone,
+      "Zip" => $lead_object->Zip,
+      "WebEventDetail" => $lead_object->WebEventDetail,
+      "LeadSource" => $lead_object->LeadSource,
+      "CampaignId" => $lead_object->CampaignId,
+      "TrackingCookie" => $lead_object->TrackingCookie,
+      "CampaignTokenList" => [
+        "NameValueTuple" => array_map(
+          array(
+            $this,
+            'ArrayToNameValueTupleList'
+          ),
+          array_keys($lead_object->CampaignTokenList),
+          array_values($lead_object->CampaignTokenList)
+        )
+      ]
+    ));
+  }
+  public function ArrayToNameValueTupleList($key, $value) {
+    return [
+      "Name" => $key,
+      "Value" => $value
+    ];
+  }
 }
