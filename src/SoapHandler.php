@@ -36,10 +36,15 @@ class SoapHandler extends \SoapClient {
           break;
       }
       // Exponential backoff
-      if(!$response && $this->attempts < $this->max_attempts) usleep($this->base_attempt_interval*pow(2, $this->attempts-1)*1000);
-      else return $response;
-    } while ( $this->attempts < $this->max_attempts );
+      if ( !$response && $this->attempts < $this->max_attempts ) {
+        usleep($this->base_attempt_interval*pow(2, $this->attempts-1)*1000);
+        $this->attempts++;
+      } else {
+        return $response;
+      }
+    } while ( $this->attempts <= $this->max_attempts );
     $this->attempts = 0; // Reset attempt counter
+    return false;
   }
   protected function getBaseLead($lead) {
     $lead = array(
