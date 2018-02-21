@@ -172,6 +172,37 @@ class SoapHandler extends \SoapClient {
     );
     return $this->__doCall("UpsertMarketoLeadAddressSpendMetadata", $lead);
   }
+  public function saveLeadMarketoAddressSpendMetadataExt($lead_object) {
+    $lead = array_merge(
+      $this->getBaseLead($lead_object),
+      array(
+        "QualifiedLead" => $lead_object->QualifiedLead,
+        "Address" => $lead_object->Address,
+        "City" => $lead_object->City,
+        "State" => $lead_object->State,
+        "LeadSource" => $lead_object->LeadSource,
+        "CampaignId" => $lead_object->CampaignId,
+        "TrackingCookie" => $lead_object->TrackingCookie,
+        "Notes" => $lead_object->Notes,
+        "DigitalPaidPlatformId" => $lead_object->DigitalPaidPlatformId,
+        "Office" => $lead_object->Office,
+        "PlatformLeadId" => $lead_object->PlatformLeadId,
+        "LeadFee" => $lead_object->LeadFee,
+        "LeadFeeDesc" => $lead_object->LeadFeeDesc,
+        "LeadMetaData" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->LeadMetaData),
+            array_values($lead_object->LeadMetaData)
+          )
+        ]
+      )
+    );
+    return $this->__doCall("UpsertMarketoLeadAddressSpendMetadataExt", $lead);
+  }
   public function saveLeadMetadata($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
