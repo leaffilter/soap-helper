@@ -31,6 +31,8 @@ class SoapHandler extends \SoapClient {
         case 'UpsertMarketoLeadAddress':
         case 'UpsertMarketoLeadAddressHomeAdvisor':
         case 'SaveWebLeadMetadata':
+        case 'UpsertMarketoLeadAddressSpendMetadata':
+        case 'UpsertMarketoLeadAddressSpendMetadataExt':
           if ( $args['QualifiedLead'] == false && $response == 0 )
             return true;
           break;
