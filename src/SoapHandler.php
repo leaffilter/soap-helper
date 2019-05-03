@@ -1,6 +1,8 @@
 <?php
 namespace LeafFilter\Integration\WebService;
 class SoapHandler extends \SoapClient {
+  const WS_NS = 'http://tempuri.org/';
+
   private $attempts               = 0;
   private $max_attempts           = 4;
   private $base_attempt_interval  = 100; // milliseconds
