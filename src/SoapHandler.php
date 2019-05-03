@@ -8,7 +8,19 @@ class SoapHandler extends \SoapClient {
 
   function __construct($wsdl_uri = "http://operations.noclogs.com/orderentrywebservice/common/lfpubwebservice.asmx?wsdl") {
     try {
-      parent::__construct($wsdl_uri);
+      $connection_options = array(
+        'classmap' => array(
+            'LeadGetValidJobInfoResponse' => 'LeafFilter\Integration\WebService\Response\JobInfoResponse'
+        ),
+        'typemap' => array(
+            array(
+                'type_ns' => self::WS_NS,
+                'type_name' => 'ArrayOfAnyType',
+                'from_xml'  => array($this, 'array_from_xml')
+            )
+        )
+      );
+      parent::__construct($wsdl_uri, $connection_options);
     }
     catch (SoapFault $e) {
       return false; // Hard failure on construction error
@@ -17,7 +29,9 @@ class SoapHandler extends \SoapClient {
   protected function __doCall($name, $args) {
     do {
       try {
-        $response = $this->{$name}($args)->{$name."Result"};
+        $response = $this->{$name}($args);
+        if (!is_object($response))
+          $response = $response->{$name."Result"};
       }
       catch (\SoapFault $e) {
         // Do not retry unless connection-related error
@@ -36,7 +50,17 @@ class SoapHandler extends \SoapClient {
           if ( $args['QualifiedLead'] == false && $response == 0 )
             return true;
           break;
+        // Handle boolean
+        case 'RegisterWarrantyByJobNumber':
+          if ($name == 'RegisterWarrantyByJobNumber') {
+            $response = $response->{$name."Result"};
+          }
+        // Handle other
+        case 'LeadGetValidJobInfo':
+          return $response;
+          break;
       }
+      // NOTE: below block should be unreachable based on above switch statement
       // Exponential backoff
       if ( !$response && $this->attempts < $this->max_attempts ) {
         usleep($this->base_attempt_interval*pow(2, $this->attempts-1)*1000);
@@ -276,10 +300,69 @@ class SoapHandler extends \SoapClient {
       ]
     ));
   }
+  public function registerWarranty($lead_object) {
+    return $this->__doCall("RegisterWarrantyByJobNumber", array(
+      "ServicePwd" => $this->service_secret,
+      "JobNumber" => $lead_object->JobNumber,
+      "LastName" => $lead_object->LastName,
+      "Email" => $lead_object->Email,
+      "Phone" => $lead_object->Phone,
+      "CampaignId" => $lead_object->CampaignId,
+      "TrackingCookie" => $lead_object->TrackingCookie
+    ));
+  }
+  public function getValidJobInfo($lead_object) {
+    return $this->__doCall("LeadGetValidJobInfo", array(
+      "ServicePwd" => $this->service_secret,
+      "JobNumber" => $lead_object->JobNumber,
+      "LastName" => $lead_object->LastName
+    ));
+  }
   public function ArrayToNameValueTupleList($key, $value) {
     return [
       "Name" => $key,
       "Value" => $value
     ];
+  }
+  public function php_value_from_xml_node($param) {
+    if ($param->hasAttributeNS(XSD_NAMESPACE . '-instance', 'nil')) {
+      return null;
+    } else {
+      switch($param->getAttributeNS(XSD_NAMESPACE . '-instance', 'type')) {
+        case 'xsd:int':
+          return (int)$param->nodeValue;
+          break;
+        case 'xsd:decimal':
+          return (float)$param->nodeValue;
+          break;
+        case 'xsd:dateTime':
+          return \DateTime::createFromFormat('Y-m-d\TH:i:s+', $param->nodeValue);
+          break;
+        case 'xsd:boolean':
+          $val = strtolower($param->nodeValue);
+          return ($val === 'false' || $val === '0') ? false : true;
+          break;
+        case 'ArrayOfAnyType':
+          $array = array();
+          foreach ($param->childNodes as $child) {
+              $array[] = $this->php_value_from_xml_node($child);
+          }
+          return $array;
+          break;
+        default:
+          return strlen($param->nodeValue) ? $param->nodeValue : '';
+          break;
+      }
+    }
+  }
+  public function array_from_xml($xml) {
+    $array = array();
+    $xmlDoc = new \DOMDocument();
+    $xmlDoc->loadXML($xml);
+    $params = $xmlDoc->documentElement->childNodes;
+    foreach($params as $param) {
+      $array[] = $this->php_value_from_xml_node($param);
+    }
+    return $array;
   }
 }
