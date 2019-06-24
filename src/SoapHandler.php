@@ -44,10 +44,7 @@ class SoapHandler extends \SoapClient {
       // Handle returning 0
       switch( $name ) {
         case 'UpsertMarketoLead':
-        case 'UpsertMarketoLeadAddress':
         case 'UpsertMarketoLeadAddressHomeAdvisor':
-        case 'SaveWebLeadMetadata':
-        case 'UpsertMarketoLeadAddressSpendMetadata':
         case 'UpsertMarketoLeadAddressSpendMetadataExt':
           if ( $args['QualifiedLead'] == false && $response == 0 )
             return true;
@@ -87,17 +84,6 @@ class SoapHandler extends \SoapClient {
               );
     return $lead;
   }
-  public function saveLead($lead_object) {
-    $lead = $this->getBaseLead($lead_object);
-    return $this->__doCall("SaveWebLead", $lead);
-  }
-  public function saveLeadWithNotesNoSF($lead_object) {
-    $lead = array_merge(
-      $this->getBaseLead($lead_object),
-      array( "Notes" => $lead_object->Notes )
-    );
-    return $this->__doCall("SaveWebLeadWithNotesNoSF", $lead);
-  }
   public function saveLeadMarketo($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
@@ -110,22 +96,6 @@ class SoapHandler extends \SoapClient {
       )
     );
     return $this->__doCall("UpsertMarketoLead", $lead);
-  }
-  public function saveLeadMarketoAddress($lead_object) {
-    $lead = array_merge(
-      $this->getBaseLead($lead_object),
-      array(
-        "QualifiedLead" => $lead_object->QualifiedLead,
-        "Address" => $lead_object->Address,
-        "City" => $lead_object->City,
-        "State" => $lead_object->State,
-        "LeadSource" => $lead_object->LeadSource,
-        "Notes" => $lead_object->Notes,
-        "CampaignId" => $lead_object->CampaignId,
-        "TrackingCookie" => $lead_object->TrackingCookie
-      )
-    );
-    return $this->__doCall("UpsertMarketoLeadAddress", $lead);
   }
   public function saveLeadMarketoAddressHomeAdvisor($lead_object) {
     $lead = array_merge(
@@ -168,38 +138,6 @@ class SoapHandler extends \SoapClient {
     );
     return $this->__doCall("UpsertMarketoLeadAddressSpend", $lead);
   }
-  public function saveLeadMarketoAddressSpendMetadata($lead_object) {
-    $lead = array_merge(
-      $this->getBaseLead($lead_object),
-      array(
-        "QualifiedLead" => $lead_object->QualifiedLead,
-        "Address" => $lead_object->Address,
-        "City" => $lead_object->City,
-        "State" => $lead_object->State,
-        "LeadSource" => $lead_object->LeadSource,
-        "CampaignId" => $lead_object->CampaignId,
-        "TrackingCookie" => $lead_object->TrackingCookie,
-        "Notes" => $lead_object->Notes,
-        "DigitalPaidPlatformId" => $lead_object->DigitalPaidPlatformId,
-        "Office" => $lead_object->Office,
-        "PlatformLeadId" => $lead_object->PlatformLeadId,
-        "LeadFee" => $lead_object->LeadFee,
-        "LeadFeeDesc" => $lead_object->LeadFeeDesc,
-        "network" => $lead_object->network,
-        "feeditemid" => $lead_object->feeditemid,
-        "device" => $lead_object->device,
-        "creative" => $lead_object->creative,
-        "keyword" => $lead_object->keyword,
-        "adposition" => $lead_object->adposition,
-        "loc_physical_ms" => $lead_object->loc_physical_ms,
-        "PaidCampaign" => $lead_object->PaidCampaign,
-        "PaidAdGroup" => $lead_object->PaidAdGroup,
-        "UTMMedium" => $lead_object->UTMMedium,
-        "UTMCampaign" => $lead_object->UTMCampaign
-      )
-    );
-    return $this->__doCall("UpsertMarketoLeadAddressSpendMetadata", $lead);
-  }
   public function saveLeadMarketoAddressSpendMetadataExt($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
@@ -231,30 +169,6 @@ class SoapHandler extends \SoapClient {
     );
     return $this->__doCall("UpsertMarketoLeadAddressSpendMetadataExt", $lead);
   }
-  public function saveLeadMetadata($lead_object) {
-    $lead = array_merge(
-      $this->getBaseLead($lead_object),
-      array(
-        "QualifiedLead" => $lead_object->QualifiedLead,
-        "LeadSource" => $lead_object->LeadSource,
-        "Notes" => $lead_object->Notes,
-        "CampaignId" => $lead_object->CampaignId,
-        "TrackingCookie" => $lead_object->TrackingCookie,
-        "network" => $lead_object->network,
-        "feeditemid" => $lead_object->feeditemid,
-        "device" => $lead_object->device,
-        "creative" => $lead_object->creative,
-        "keyword" => $lead_object->keyword,
-        "adposition" => $lead_object->adposition,
-        "loc_physical_ms" => $lead_object->loc_physical_ms,
-        "PaidCampaign" => $lead_object->PaidCampaign,
-        "PaidAdGroup" => $lead_object->PaidAdGroup,
-        "UTMMedium" => $lead_object->UTMMedium,
-        "UTMCampaign" => $lead_object->UTMCampaign
-      )
-    );
-    return $this->__doCall("SaveWebLeadMetadata", $lead);
-  }
   public function saveLeadReferralMarketoAssociation($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
@@ -277,6 +191,90 @@ class SoapHandler extends \SoapClient {
       )
     );
     return $this->__doCall("SaveWebLeadReferralMarketoAssociation", $lead);
+  }
+  public function saveLeadCustomerReferral($lead_object) {
+    $lead = array_merge( $this->getBaseLead($lead_object),
+      array(
+        "LeadSource" => $lead_object->LeadSource,
+        "Notes" => $lead_object->Notes,
+        "ReferrerFirstName" => $lead_object->ReferrerFirstName,
+        "ReferrerLastName" => $lead_object->ReferrerLastName,
+        "ReferrerEmail" => $lead_object->ReferrerEmail,
+        "ReferrerJobNumber" => $lead_object->ReferrerJobNumber,
+        "CampaignId" => $lead_object->CampaignId,
+        "TrackingCookie" => $lead_object->TrackingCookie,
+        "CampaignTokenList" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->CampaignTokenList),
+            array_values($lead_object->CampaignTokenList)
+          )
+        ],
+        "LeadCampaignId" => $lead_object->LeadCampaignId,
+        "LeadCampaignTokenList" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->LeadCampaignTokenList),
+            array_values($lead_object->LeadCampaignTokenList)
+          )
+        ],
+        "LeadMetaData" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->LeadMetaData),
+            array_values($lead_object->LeadMetaData)
+          )
+        ]
+      )
+    );
+    return $this->__doCall("SaveCustomerReferral", $lead);
+  }
+  public function saveReferral($lead_object) {
+    $lead = array_merge(
+      $this->getBaseLead($lead_object),
+      array(
+        "LeadSource" => $lead_object->LeadSource,
+        "Notes" => $lead_object->Notes,
+        "ReferrerFirstName" => $lead_object->ReferrerFirstName,
+        "ReferrerLastName" => $lead_object->ReferrerLastName,
+        "ReferrerPhone" => $lead_object->ReferrerPhone,
+        "ReferrerEmail" => $lead_object->ReferrerEmail,
+        "ReferrerAddress" => $lead_object->ReferrerAddress,
+        "ReferrerJobNumber" => $lead_object->ReferrerJobNumber,
+        "CampaignId" => $lead_object->CampaignId,
+        "TrackingCookie" => $lead_object->TrackingCookie,
+        "CampaignTokenList" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->CampaignTokenList),
+            array_values($lead_object->CampaignTokenList)
+          )
+        ],
+        "LeadMetaData" => [
+          "NameValueTuple" => array_map(
+            array(
+              $this,
+              'ArrayToNameValueTupleList'
+            ),
+            array_keys($lead_object->LeadMetaData),
+            array_values($lead_object->LeadMetaData)
+          )
+        ]
+      )
+    );
+    return $this->__doCall("SaveLeadReferral", $lead);
   }
   public function saveMarketo($lead_object) {
     return $this->__doCall("SaveMarketoOnly", array(
