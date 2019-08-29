@@ -40,7 +40,7 @@ class SoapHandler extends \SoapClient {
       );
       parent::__construct($options['wsdl_uri'], $connection_options);
     }
-    catch (SoapFault $e) {
+    catch (\SoapFault $e) {
       $this->logger->addWarning('Encountered SoapFault during construction', array('exception' => $e));
       return false; // Hard failure on construction error
     }
