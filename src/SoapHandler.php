@@ -1,5 +1,8 @@
 <?php
 namespace LeafFilter\Integration\WebService;
+use Monolog\Logger;
+use Monolog\Handler\NullHandler;
+
 class SoapHandler extends \SoapClient {
   const WS_NS = 'http://tempuri.org/';
 
@@ -7,8 +10,21 @@ class SoapHandler extends \SoapClient {
   private $max_attempts           = 4;
   private $base_attempt_interval  = 100; // milliseconds
   private $service_secret         = "@vv20!3";
+  private $logger;
 
-  function __construct($wsdl_uri = "http://operations.noclogs.com/orderentrywebservice/common/lfpubwebservice.asmx?wsdl") {
+  function __construct(array $options) {
+    $defaults = [
+      'wsdl_uri' => 'http://operations.noclogs.com/orderentrywebservice/common/lfpubwebservice.asmx?wsdl',
+      'logger' => null
+    ];
+    $options = array_merge($defaults, array_intersect_key($options, $defaults));
+    // Use channel with null handler if no logger supplied
+    if ($options['logger'] === null) {
+      $this->logger = new Logger('null');
+      $this->logger->pushHandler(new NullHandler());
+    } else {
+      $this->logger = $options['logger'];
+    }
     try {
       $connection_options = array(
         'classmap' => array(
@@ -22,9 +38,10 @@ class SoapHandler extends \SoapClient {
             )
         )
       );
-      parent::__construct($wsdl_uri, $connection_options);
+      parent::__construct($options['wsdl_uri'], $connection_options);
     }
     catch (SoapFault $e) {
+      $this->logger->addWarning('Encountered SoapFault during construction', array('exception' => $e));
       return false; // Hard failure on construction error
     }
   }
@@ -36,6 +53,7 @@ class SoapHandler extends \SoapClient {
           $response = $response->{$name."Result"};
       }
       catch (\SoapFault $e) {
+        $this->logger->addWarning('Encountered SoapFault during method call', array('exception' => $e, 'method' => $name));
         // Do not retry unless connection-related error
         if ( $e->faultcode != "HTTP" ) {
           return false;
