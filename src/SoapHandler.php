@@ -69,9 +69,9 @@ class SoapHandler extends \SoapClient {
           break;
         // Handle boolean
         case 'RegisterWarrantyByJobNumber':
-          if ($name == 'RegisterWarrantyByJobNumber') {
-            $response = $response->{$name."Result"};
-          }
+        // Handle string
+        case 'GetMarketFromZip':
+          $response = $response->{$name."Result"};
         // Handle other
         case 'LeadGetValidJobInfo':
           return $response;
@@ -334,6 +334,12 @@ class SoapHandler extends \SoapClient {
       "ServicePwd" => $this->service_secret,
       "JobNumber" => $lead_object->JobNumber,
       "LastName" => $lead_object->LastName
+    ));
+  }
+  public function getZipMarket($zip) {
+    return $this->__doCall("GetMarketFromZip", array(
+      "ServicePwd" => $this->service_secret,
+      "Zip" => $zip
     ));
   }
   public function ArrayToNameValueTupleList($key, $value) {
