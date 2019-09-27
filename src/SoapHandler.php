@@ -49,7 +49,7 @@ class SoapHandler extends \SoapClient {
     do {
       try {
         $response = $this->{$name}($args);
-        if (!is_object($response))
+        if ($response instanceof \stdClass && property_exists($response, $name . 'Result'))
           $response = $response->{$name."Result"};
       }
       catch (\SoapFault $e) {
@@ -69,9 +69,8 @@ class SoapHandler extends \SoapClient {
           break;
         // Handle boolean
         case 'RegisterWarrantyByJobNumber':
-          if ($name == 'RegisterWarrantyByJobNumber') {
-            $response = $response->{$name."Result"};
-          }
+        // Handle string
+        case 'GetMarketFromZip':
         // Handle other
         case 'LeadGetValidJobInfo':
           return $response;
@@ -334,6 +333,12 @@ class SoapHandler extends \SoapClient {
       "ServicePwd" => $this->service_secret,
       "JobNumber" => $lead_object->JobNumber,
       "LastName" => $lead_object->LastName
+    ));
+  }
+  public function getZipMarket($zip) {
+    return $this->__doCall("GetMarketFromZip", array(
+      "ServicePwd" => $this->service_secret,
+      "Zip" => $zip
     ));
   }
   public function ArrayToNameValueTupleList($key, $value) {
