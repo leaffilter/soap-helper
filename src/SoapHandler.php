@@ -12,7 +12,7 @@ class SoapHandler extends \SoapClient {
   private $service_secret         = "@vv20!3";
   private $logger;
 
-  function __construct(array $options) {
+  function __construct(array $options = []) {
     $defaults = [
       'wsdl_uri' => 'http://operations.noclogs.com/orderentrywebservice/common/lfpubwebservice.asmx?wsdl',
       'logger' => null
@@ -26,22 +26,22 @@ class SoapHandler extends \SoapClient {
       $this->logger = $options['logger'];
     }
     try {
-      $connection_options = array(
-        'classmap' => array(
-            'LeadGetValidJobInfoResponse' => 'LeafFilter\Integration\WebService\Response\JobInfoResponse'
-        ),
-        'typemap' => array(
-            array(
-                'type_ns' => self::WS_NS,
-                'type_name' => 'ArrayOfAnyType',
-                'from_xml'  => array($this, 'array_from_xml')
-            )
-        )
-      );
+      $connection_options = [
+        'classmap' => [
+          'LeadGetValidJobInfoResponse' => 'LeafFilter\Integration\WebService\Response\JobInfoResponse'
+        ],
+        'typemap' => [
+          [
+            'type_ns' => self::WS_NS,
+            'type_name' => 'ArrayOfAnyType',
+            'from_xml'  => [$this, 'array_from_xml']
+          ]
+        ]
+      ];
       parent::__construct($options['wsdl_uri'], $connection_options);
     }
     catch (\SoapFault $e) {
-      $this->logger->addWarning('Encountered SoapFault during construction', array('exception' => $e));
+      $this->logger->addWarning('Encountered SoapFault during construction', ['exception' => $e]);
       return false; // Hard failure on construction error
     }
   }
@@ -53,7 +53,7 @@ class SoapHandler extends \SoapClient {
           $response = $response->{$name."Result"};
       }
       catch (\SoapFault $e) {
-        $this->logger->addWarning('Encountered SoapFault during method call', array('exception' => $e, 'method' => $name));
+        $this->logger->addWarning('Encountered SoapFault during method call', ['exception' => $e, 'method' => $name]);
         // Do not retry unless connection-related error
         if ( $e->faultcode != "HTTP" ) {
           return false;
@@ -89,35 +89,35 @@ class SoapHandler extends \SoapClient {
     return false;
   }
   protected function getBaseLead($lead) {
-    $lead = array(
-                  "ServicePwd" => $this->service_secret,
-                  "FirstName" => $lead->FirstName,
-                  "LastName" => $lead->LastName,
-                  "Email" => $lead->Email,
-                  "Phone" => $lead->Phone,
-                  "Zip" => $lead->Zip,
-                  "LeadSourceId" => $lead->LeadSourceId,
-                  "WebEventDetail" => $lead->WebEventDetail
-              );
+    $lead = [
+              "ServicePwd" => $this->service_secret,
+              "FirstName" => $lead->FirstName,
+              "LastName" => $lead->LastName,
+              "Email" => $lead->Email,
+              "Phone" => $lead->Phone,
+              "Zip" => $lead->Zip,
+              "LeadSourceId" => $lead->LeadSourceId,
+              "WebEventDetail" => $lead->WebEventDetail
+            ];
     return $lead;
   }
   public function saveLeadMarketo($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
-      array(
+      [
         "QualifiedLead" => $lead_object->QualifiedLead,
         "LeadSource" => $lead_object->LeadSource,
         "Notes" => $lead_object->Notes,
         "CampaignId" => $lead_object->CampaignId,
         "TrackingCookie" => $lead_object->TrackingCookie
-      )
+      ]
     );
     return $this->__doCall("UpsertMarketoLead", $lead);
   }
   public function saveLeadMarketoAddressHomeAdvisor($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
-      array(
+      [
         "QualifiedLead" => $lead_object->QualifiedLead,
         "Address" => $lead_object->Address,
         "City" => $lead_object->City,
@@ -130,14 +130,14 @@ class SoapHandler extends \SoapClient {
         "HomeAdvisorLeadFeeDesc" => $lead_object->HomeAdvisorLeadFeeDesc,
         "CampaignId" => $lead_object->CampaignId,
         "TrackingCookie" => $lead_object->TrackingCookie
-      )
+      ]
     );
     return $this->__doCall("UpsertMarketoLeadAddressHomeAdvisor", $lead);
   }
   public function saveLeadMarketoAddressSpend($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
-      array(
+      [
         "QualifiedLead" => $lead_object->QualifiedLead,
         "Address" => $lead_object->Address,
         "City" => $lead_object->City,
@@ -151,14 +151,14 @@ class SoapHandler extends \SoapClient {
         "LeadFeeDesc" => $lead_object->LeadFeeDesc,
         "CampaignId" => $lead_object->CampaignId,
         "TrackingCookie" => $lead_object->TrackingCookie
-      )
+      ]
     );
     return $this->__doCall("UpsertMarketoLeadAddressSpend", $lead);
   }
   public function saveLeadMarketoAddressSpendMetadataExt($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
-      array(
+      [
         "QualifiedLead" => $lead_object->QualifiedLead,
         "Address" => $lead_object->Address,
         "City" => $lead_object->City,
@@ -174,22 +174,22 @@ class SoapHandler extends \SoapClient {
         "LeadFeeDesc" => $lead_object->LeadFeeDesc,
         "LeadMetaData" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->LeadMetaData),
             array_values($lead_object->LeadMetaData)
           )
         ]
-      )
+      ]
     );
     return $this->__doCall("UpsertMarketoLeadAddressSpendMetadataExt", $lead);
   }
   public function saveLeadReferralMarketoAssociation($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
-      array(
+      [
         "LeadSource" => $lead_object->LeadSource,
         "Notes" => $lead_object->Notes,
         "ReferrerJobNumber" => $lead_object->ReferrerJobNumber,
@@ -197,21 +197,21 @@ class SoapHandler extends \SoapClient {
         "TrackingCookie" => $lead_object->TrackingCookie,
         "CampaignTokenList" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->CampaignTokenList),
             array_values($lead_object->CampaignTokenList)
           )
         ]
-      )
+      ]
     );
     return $this->__doCall("SaveWebLeadReferralMarketoAssociation", $lead);
   }
   public function saveLeadCustomerReferral($lead_object) {
     $lead = array_merge( $this->getBaseLead($lead_object),
-      array(
+      [
         "LeadSource" => $lead_object->LeadSource,
         "Notes" => $lead_object->Notes,
         "ReferrerFirstName" => $lead_object->ReferrerFirstName,
@@ -222,10 +222,10 @@ class SoapHandler extends \SoapClient {
         "TrackingCookie" => $lead_object->TrackingCookie,
         "CampaignTokenList" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->CampaignTokenList),
             array_values($lead_object->CampaignTokenList)
           )
@@ -233,32 +233,32 @@ class SoapHandler extends \SoapClient {
         "LeadCampaignId" => $lead_object->LeadCampaignId,
         "LeadCampaignTokenList" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->LeadCampaignTokenList),
             array_values($lead_object->LeadCampaignTokenList)
           )
         ],
         "LeadMetaData" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->LeadMetaData),
             array_values($lead_object->LeadMetaData)
           )
         ]
-      )
+      ]
     );
     return $this->__doCall("SaveCustomerReferral", $lead);
   }
   public function saveReferral($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
-      array(
+      [
         "LeadSource" => $lead_object->LeadSource,
         "Notes" => $lead_object->Notes,
         "ReferrerFirstName" => $lead_object->ReferrerFirstName,
@@ -271,30 +271,30 @@ class SoapHandler extends \SoapClient {
         "TrackingCookie" => $lead_object->TrackingCookie,
         "CampaignTokenList" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->CampaignTokenList),
             array_values($lead_object->CampaignTokenList)
           )
         ],
         "LeadMetaData" => [
           "NameValueTuple" => array_map(
-            array(
+            [
               $this,
               'ArrayToNameValueTupleList'
-            ),
+            ],
             array_keys($lead_object->LeadMetaData),
             array_values($lead_object->LeadMetaData)
           )
         ]
-      )
+      ]
     );
     return $this->__doCall("SaveLeadReferral", $lead);
   }
   public function saveMarketo($lead_object) {
-    return $this->__doCall("SaveMarketoOnly", array(
+    return $this->__doCall("SaveMarketoOnly", [
       "ServicePwd" => $this->service_secret,
       "FirstName" => $lead_object->FirstName,
       "LastName" => $lead_object->LastName,
@@ -307,18 +307,18 @@ class SoapHandler extends \SoapClient {
       "TrackingCookie" => $lead_object->TrackingCookie,
       "CampaignTokenList" => [
         "NameValueTuple" => array_map(
-          array(
+          [
             $this,
             'ArrayToNameValueTupleList'
-          ),
+          ],
           array_keys($lead_object->CampaignTokenList),
           array_values($lead_object->CampaignTokenList)
         )
       ]
-    ));
+    ]);
   }
   public function registerWarranty($lead_object) {
-    return $this->__doCall("RegisterWarrantyByJobNumber", array(
+    return $this->__doCall("RegisterWarrantyByJobNumber", [
       "ServicePwd" => $this->service_secret,
       "JobNumber" => $lead_object->JobNumber,
       "LastName" => $lead_object->LastName,
@@ -326,20 +326,20 @@ class SoapHandler extends \SoapClient {
       "Phone" => $lead_object->Phone,
       "CampaignId" => $lead_object->CampaignId,
       "TrackingCookie" => $lead_object->TrackingCookie
-    ));
+    ]);
   }
   public function getValidJobInfo($lead_object) {
-    return $this->__doCall("LeadGetValidJobInfo", array(
+    return $this->__doCall("LeadGetValidJobInfo", [
       "ServicePwd" => $this->service_secret,
       "JobNumber" => $lead_object->JobNumber,
       "LastName" => $lead_object->LastName
-    ));
+    ]);
   }
   public function getZipMarket($zip) {
-    return $this->__doCall("GetMarketFromZip", array(
+    return $this->__doCall("GetMarketFromZip", [
       "ServicePwd" => $this->service_secret,
       "Zip" => $zip
-    ));
+    ]);
   }
   public function ArrayToNameValueTupleList($key, $value) {
     return [
@@ -366,7 +366,7 @@ class SoapHandler extends \SoapClient {
           return ($val === 'false' || $val === '0') ? false : true;
           break;
         case 'ArrayOfAnyType':
-          $array = array();
+          $array = [];
           foreach ($param->childNodes as $child) {
               $array[] = $this->php_value_from_xml_node($child);
           }
@@ -379,7 +379,7 @@ class SoapHandler extends \SoapClient {
     }
   }
   public function array_from_xml($xml) {
-    $array = array();
+    $array = [];
     $xmlDoc = new \DOMDocument();
     $xmlDoc->loadXML($xml);
     $params = $xmlDoc->documentElement->childNodes;
