@@ -341,6 +341,13 @@ class SoapHandler extends \SoapClient {
       "Zip" => $zip
     ]);
   }
+  public function updateNotesByGuid($guid, $notes) {
+    return $this->__doCall("UpdateLeadNotesByGuid", [
+      "ServicePwd" => $this->service_secret,
+      "Guid" => $guid,
+      "Notes" => $notes
+    ]);
+  }
   public function ArrayToNameValueTupleList($key, $value) {
     return [
       "Name" => $key,
