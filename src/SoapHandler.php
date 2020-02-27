@@ -54,10 +54,18 @@ class SoapHandler extends \SoapClient {
       }
       catch (\SoapFault $e) {
         $this->logger->addWarning('Encountered SoapFault during method call', ['exception' => $e, 'method' => $name]);
+        // Throw SoapFault for UpdateLeadNotesByGuid, which has a boolean return type
+        // Allows clients to differentiate between temporary failures
+        // versus soft failures (e.g. GUID was not found - no lead updated)
+        if ( $name == 'UpdateLeadNotesByGuid' ) {
+          throw $e;
+        }
         // Do not retry unless connection-related error
         if ( $e->faultcode != "HTTP" ) {
           return false;
-        } else $response = false;
+        } else {
+          $response = false;
+        }
       }
       // Handle returning 0
       switch( $name ) {
@@ -69,6 +77,7 @@ class SoapHandler extends \SoapClient {
           break;
         // Handle boolean
         case 'RegisterWarrantyByJobNumber':
+        case 'UpdateLeadNotesByGuid':
         // Handle string
         case 'GetMarketFromZip':
         // Handle other
