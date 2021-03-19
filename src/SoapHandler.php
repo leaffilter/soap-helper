@@ -70,7 +70,6 @@ class SoapHandler extends \SoapClient {
       // Handle returning 0
       switch( $name ) {
         case 'UpsertMarketoLead':
-        case 'UpsertMarketoLeadAddressHomeAdvisor':
         case 'UpsertMarketoLeadAddressSpendMetadataExt':
           if ( $args['QualifiedLead'] == false && $response == 0 )
             return true;
@@ -123,26 +122,6 @@ class SoapHandler extends \SoapClient {
     );
     return $this->__doCall("UpsertMarketoLead", $lead);
   }
-  public function saveLeadMarketoAddressHomeAdvisor($lead_object) {
-    $lead = array_merge(
-      $this->getBaseLead($lead_object),
-      [
-        "QualifiedLead" => $lead_object->QualifiedLead,
-        "Address" => $lead_object->Address,
-        "City" => $lead_object->City,
-        "State" => $lead_object->State,
-        "LeadSource" => $lead_object->LeadSource,
-        "Notes" => $lead_object->Notes,
-        "HomeAdvisorAccount" => $lead_object->HomeAdvisorAccount,
-        "HomeAdvisorJobId" => $lead_object->HomeAdvisorJobId,
-        "HomeAdvisorLeadFee" => $lead_object->HomeAdvisorLeadFee,
-        "HomeAdvisorLeadFeeDesc" => $lead_object->HomeAdvisorLeadFeeDesc,
-        "CampaignId" => $lead_object->CampaignId,
-        "TrackingCookie" => $lead_object->TrackingCookie
-      ]
-    );
-    return $this->__doCall("UpsertMarketoLeadAddressHomeAdvisor", $lead);
-  }
   public function saveLeadMarketoAddressSpend($lead_object) {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
@@ -168,6 +147,7 @@ class SoapHandler extends \SoapClient {
     $lead = array_merge(
       $this->getBaseLead($lead_object),
       [
+        "EveningPhone" => $lead_object->EveningPhone ?? '',
         "QualifiedLead" => $lead_object->QualifiedLead,
         "Address" => $lead_object->Address,
         "City" => $lead_object->City,
